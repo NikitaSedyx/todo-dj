@@ -2,16 +2,12 @@ from tastypie.resources import ModelResource, Resource
 from tastypie import fields
 from tastypie.authorization import Authorization
 from tastypie.authentication import SessionAuthentication
-
 from django.contrib.sessions.models import Session
-
 from  django.conf.urls import url
 from django.contrib import auth
 from django.http import HttpResponse
-
 from items.models import Item
 from django.contrib.auth.models import User
-
 import json
 
 class UserAuthorization(Authorization):
@@ -36,23 +32,22 @@ class UserAuthorization(Authorization):
     return bundle.obj.user == bundle.request.user
 
 
-
 class UserResource(ModelResource):
   class Meta:
     queryset = User.objects.all()
     resource_name = 'user'
     excludes = ['email', 'password', 'is_active', 'is_staff', 'is_superuser']
-
+    authentication = SessionAuthentication()
 
 
 class ItemResource(ModelResource):
-  user = fields.ForeignKey(UserResource, 'user')
+  user = fields.ForeignKey(UserResource, 'user', blank=True)
   class Meta:
     queryset = Item.objects.all()
     resource_name = 'item'
     authentication = SessionAuthentication()
     authorization= UserAuthorization()
-    allowed_methods = ['get', 'post', 'put', 'delete']
+
 
 class LoginResource(Resource):
   class Meta:
@@ -85,5 +80,3 @@ class LoginResource(Resource):
 
   def get_user(self, request, **kwargs):
     return HttpResponse(request.user)
-
-
