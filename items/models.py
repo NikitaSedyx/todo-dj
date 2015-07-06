@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from tastypie.utils.timezone import now
 
 class Item(models.Model):
-  user = models.ForeignKey(User, default=None)
+  user = models.ForeignKey(User)
   created_at = models.DateTimeField(auto_now_add=True, editable=False)
   description = models.CharField(max_length=150, default='')
   is_completed = models.BooleanField(default=False)
