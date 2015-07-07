@@ -2,6 +2,7 @@ from tastypie.resources import ModelResource, Resource
 from tastypie import fields
 from tastypie.authorization import Authorization
 from tastypie.authentication import SessionAuthentication
+from tastypie.paginator import Paginator
 from django.contrib.sessions.models import Session
 from  django.conf.urls import url
 from django.contrib import auth
@@ -46,7 +47,13 @@ class ItemResource(ModelResource):
     queryset = Item.objects.all()
     resource_name = 'item'
     authentication = SessionAuthentication()
-    authorization= UserAuthorization()
+    authorization = UserAuthorization()
+    paginator_class = Paginator
+    limit = 10
+    ordering = ['description']
+    filtering = {
+      'description':('contains', ),
+    }
 
 
 class LoginResource(Resource):
