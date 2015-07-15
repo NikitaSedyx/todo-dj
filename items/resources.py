@@ -2,15 +2,18 @@ from tastypie.resources import ModelResource, Resource
 from tastypie import fields
 from tastypie.authorization import Authorization
 from tastypie.authentication import SessionAuthentication
+from tastypie.paginator import Paginator
 from django.contrib.sessions.models import Session
 from  django.conf.urls import url
 from django.contrib import auth
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseServerError
 from items.models import Item
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, UserManager
 import json
+from django.core import serializers
+from django.db import IntegrityError
 
-class UserAuthorization(Authorization):
+class ItemAuthorization(Authorization):
 
   def get_user(self, bundle):
     return bundle.request.user
@@ -31,6 +34,30 @@ class UserAuthorization(Authorization):
   def delete_detail(self, object_list, bundle):
     return bundle.obj.user == bundle.request.user
 
+class UserAuthorization(Authorization):
+
+  def get_user(self, bundle):
+    return bundle.request.user
+
+  def read_list(self, object_list, bundle):
+    if self.get_user(bundle).is_active:
+      return object_list
+    return []
+
+  def read_detail(self, object_list, bundle):
+    return self.get_user(bundle).is_active
+
+  def create_detail(self, object_list, bundle):
+    return user.is_superuser
+
+  def update_detail(self, object_list, bundle):
+    user = self.get_user(bundle)
+    return bundle.obj == user or user.is_superuser
+
+  def delete_detail(self, object_list, bundle):
+    user = self.get_user(bundle)
+    return bundle.obj == user or user.is_superuser
+
 
 class UserResource(ModelResource):
   class Meta:
@@ -38,6 +65,7 @@ class UserResource(ModelResource):
     resource_name = 'user'
     excludes = ['email', 'password', 'is_active', 'is_staff', 'is_superuser']
     authentication = SessionAuthentication()
+    authorization = UserAuthorization()
 
 
 class ItemResource(ModelResource):
@@ -46,7 +74,13 @@ class ItemResource(ModelResource):
     queryset = Item.objects.all()
     resource_name = 'item'
     authentication = SessionAuthentication()
-    authorization= UserAuthorization()
+    authorization = ItemAuthorization()
+    paginator_class = Paginator
+    limit = 10
+    ordering = ['description']
+    filtering = {
+      'description':('icontains', ),
+    }
 
 
 class LoginResource(Resource):
@@ -80,3 +114,38 @@ class LoginResource(Resource):
 
   def get_user(self, request, **kwargs):
     return HttpResponse(request.user)
+
+
+class RegistrationResource(Resource):
+  class Meta:
+    pass
+
+  def prepend_urls(self):
+    return [
+      url(r'^registration/$', self.wrap_view('registration'), name='api_registration')
+    ]
+
+  def registration(self, request, **kwargs):
+    if request.method == 'POST':
+      try:
+        data = json.loads(request.body)
+        username = data['username']
+        password = data['password']
+        confirm_password = data['confirmPassword']
+        email = data['email']
+      except KeyError:
+        return HttpResponseServerError('Wrong params')
+      if password != confirm_password:
+        return HttpResponseServerError('Passwords are not equal')
+      try:
+        user = User.objects.create_user(username=username, password=password, email=email)
+      except IntegrityError:
+        return HttpResponseServerError('There is user with this name')
+      user = {
+        'username': user.username,
+        'id': user.id,
+        'email': user.email
+      }
+      return HttpResponse(json.dumps(user))
+    else:
+      return HttpResponseServerError('Forbidden method')
