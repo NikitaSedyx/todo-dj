@@ -77,9 +77,10 @@ class ItemResource(ModelResource):
     authorization = ItemAuthorization()
     paginator_class = Paginator
     limit = 10
-    ordering = ['description']
+    ordering = ['is_completed', 'description', 'deadline']
     filtering = {
       'description':('icontains', ),
+      'deadline':('gt', ),
     }
 
 
@@ -102,7 +103,8 @@ class LoginResource(Resource):
       user = auth.authenticate(username=username, password=password)
       if user is not None:
         auth.login(request, user)
-        return HttpResponse(user)
+        response = self.create_response(request, Unpacking.unpack_user(user))
+        return HttpResponse(response)
       else:
         return HttpResponse(status=500)
     else:
@@ -113,7 +115,9 @@ class LoginResource(Resource):
     return HttpResponse(status=200)
 
   def get_user(self, request, **kwargs):
-    return HttpResponse(request.user)
+    user = request.user
+    response = self.create_response(request, Unpacking.unpack_user(user))
+    return HttpResponse(response)
 
 
 class RegistrationResource(Resource):
@@ -141,11 +145,22 @@ class RegistrationResource(Resource):
         user = User.objects.create_user(username=username, password=password, email=email)
       except IntegrityError:
         return HttpResponseServerError('There is user with this name')
-      user = {
-        'username': user.username,
-        'id': user.id,
-        'email': user.email
-      }
-      return HttpResponse(json.dumps(user))
+      response = self.create_response(request, Unpacking.unpack_user(user))
+      return HttpResponse(response)
     else:
       return HttpResponseServerError('Forbidden method')
+
+
+class Unpacking:
+
+  @staticmethod
+  def unpack_user(user):
+    return {
+      'id': user.id,
+      'username': user.username,
+      'email': user.email,
+      'first_name': user.first_name,
+      'last_name': user.last_name,
+      'last_login': user.last_login,
+      'is_active': user.is_active,
+    }
