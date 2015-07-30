@@ -15,3 +15,21 @@ class Item(models.Model):
 
   def __str__(self):
     return self.description
+
+class Group(models.Model):
+  users = models.ManyToManyField(User)
+  created_at = models.DateTimeField(auto_now_add=True, editable=False)
+  updated_at = models.DateTimeField(auto_now=True, editable=False)
+  title = models.CharField(max_length=150, default='Group Tasks')
+  items = models.ManyToManyField(Item)
+  view = models.BooleanField(default=True)
+  is_deleted = models.BooleanField(default=False)
+
+  class Meta:
+    db_table = 'todo_groups'
+    ordering = ['-created_at']
+
+  def __str__(self):
+    return self.title
+
+
