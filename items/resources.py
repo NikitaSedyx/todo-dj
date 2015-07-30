@@ -19,27 +19,20 @@ class ItemAuthorization(Authorization):
     return bundle.request.user
 
   def read_list(self, object_list, bundle):
-    if self.get_user(bundle).is_active:
-      allowed = []
-      user = self.get_user(bundle)
-      for obj in object_list:
-        if user in obj.users.all():
-          allowed.append(obj)
-      return allowed
     return []
 
   def read_detail(self, object_list, bundle):
-    return self.get_user(bundle) in bundle.obj.users.all()
+    return self.get_user(bundle) in bundle.obj.group.users.all()
 
   def update_detail(self, object_list, bundle):
-    return self.get_user(bundle) in bundle.obj.users.all()
+    return self.get_user(bundle) in bundle.obj.group.users.all()
 
   def create_detail(self, object_list, bundle):
     bundle.obj.users = bundle.data['users']
     return True
 
   def delete_detail(self, object_list, bundle):
-    return self.get_user(bundle) in bundle.obj.users.all()
+    return self.get_user(bundle) in bundle.obj.group.users.all()
 
 
 class GroupAuthorization(Authorization):
@@ -58,6 +51,7 @@ class GroupAuthorization(Authorization):
     return []
 
   def read_detail(self, object_list, bundle):
+    print bundle.obj.item_set.all()
     return self.get_user(bundle) in bundle.obj.users.all()
 
   def update_detail(self, object_list, bundle):
@@ -105,8 +99,20 @@ class UserResource(ModelResource):
     authorization = UserAuthorization()
 
 
-class ItemResource(ModelResource):
+class GroupResource(ModelResource):
   users = fields.ManyToManyField(UserResource, 'users', blank=True, full=True)
+  items = fields.ToManyField('items.resources.ItemResource', 'item_set', related_name="group", full=True)
+  class Meta:
+    queryset = Group.objects.filter(is_deleted=False)
+    resource_name = 'group'
+    authentication = SessionAuthentication()
+    authorization = GroupAuthorization()
+    paginator_class = Paginator
+    limit = 10
+
+
+class ItemResource(ModelResource):
+  group = fields.ToOneField(GroupResource, 'group')
   class Meta:
     queryset = Item.objects.all()
     resource_name = 'item'
@@ -119,18 +125,6 @@ class ItemResource(ModelResource):
       'description':('icontains', ),
       'deadline':('gt', ),
     }
-
-
-class GroupResource(ModelResource):
-  users = fields.ManyToManyField(UserResource, 'users', blank=True, full=True)
-  items = fields.ManyToManyField(ItemResource, 'items', full=True)
-  class Meta:
-    queryset = Group.objects.filter(is_deleted=False)
-    resource_name = 'group'
-    authentication = SessionAuthentication()
-    authorization = GroupAuthorization()
-    paginator_class = Paginator
-    limit = 10
 
 
 class LoginResource(Resource):
