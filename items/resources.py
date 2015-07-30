@@ -4,10 +4,10 @@ from tastypie.authorization import Authorization
 from tastypie.authentication import SessionAuthentication
 from tastypie.paginator import Paginator
 from django.contrib.sessions.models import Session
-from  django.conf.urls import url
+from django.conf.urls import url
 from django.contrib import auth
 from django.http import HttpResponse, HttpResponseServerError
-from items.models import Item
+from items.models import Item, Group
 from django.contrib.auth.models import User, UserManager
 import json
 from django.core import serializers
@@ -19,20 +19,57 @@ class ItemAuthorization(Authorization):
     return bundle.request.user
 
   def read_list(self, object_list, bundle):
-    return object_list.filter(user=self.get_user(bundle))
+    if self.get_user(bundle).is_active:
+      allowed = []
+      user = self.get_user(bundle)
+      for obj in object_list:
+        if user in obj.users.all():
+          allowed.append(obj)
+      return allowed
+    return []
 
   def read_detail(self, object_list, bundle):
-    return bundle.obj.user == bundle.request.user
+    return self.get_user(bundle) in bundle.obj.users.all()
 
   def update_detail(self, object_list, bundle):
-    return bundle.obj.user == bundle.request.user
+    return self.get_user(bundle) in bundle.obj.users.all()
 
   def create_detail(self, object_list, bundle):
-    bundle.obj.user = self.get_user(bundle)
+    bundle.obj.users = bundle.data['users']
     return True
 
   def delete_detail(self, object_list, bundle):
-    return bundle.obj.user == bundle.request.user
+    return self.get_user(bundle) in bundle.obj.users.all()
+
+
+class GroupAuthorization(Authorization):
+
+  def get_user(self, bundle):
+    return bundle.request.user
+
+  def read_list(self, object_list, bundle):
+    if self.get_user(bundle).is_active:
+      allowed = []
+      user = self.get_user(bundle)
+      for obj in object_list:
+        if user in obj.users.all():
+          allowed.append(obj)
+      return allowed
+    return []
+
+  def read_detail(self, object_list, bundle):
+    return self.get_user(bundle) in bundle.obj.users.all()
+
+  def update_detail(self, object_list, bundle):
+    return self.get_user(bundle) in bundle.obj.users.all()
+
+  def create_detail(self, object_list, bundle):
+    bundle.obj.users.append(self.get_user(bundle))
+    return True
+
+  def delete_detail(self, object_list, bundle):
+    return bundle.request.user in bundle.obj.users.all()
+
 
 class UserAuthorization(Authorization):
 
@@ -69,7 +106,7 @@ class UserResource(ModelResource):
 
 
 class ItemResource(ModelResource):
-  user = fields.ForeignKey(UserResource, 'user', blank=True)
+  users = fields.ManyToManyField(UserResource, 'users', blank=True, full=True)
   class Meta:
     queryset = Item.objects.all()
     resource_name = 'item'
@@ -82,6 +119,18 @@ class ItemResource(ModelResource):
       'description':('icontains', ),
       'deadline':('gt', ),
     }
+
+
+class GroupResource(ModelResource):
+  users = fields.ManyToManyField(UserResource, 'users', blank=True, full=True)
+  items = fields.ManyToManyField(ItemResource, 'items', full=True)
+  class Meta:
+    queryset = Group.objects.filter(is_deleted=False)
+    resource_name = 'group'
+    authentication = SessionAuthentication()
+    authorization = GroupAuthorization()
+    paginator_class = Paginator
+    limit = 10
 
 
 class LoginResource(Resource):

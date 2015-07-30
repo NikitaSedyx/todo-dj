@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from tastypie.utils.timezone import now
 
 class Item(models.Model):
-  user = models.ManyToManyField(User)
+  users = models.ManyToManyField(User)
   created_at = models.DateTimeField(auto_now_add=True, editable=False)
   description = models.CharField(max_length=150, default='')
   is_completed = models.BooleanField(default=False)
@@ -16,8 +16,9 @@ class Item(models.Model):
   def __str__(self):
     return self.description
 
+
 class Group(models.Model):
-  users = models.ManyToManyField(User)
+  users = models.ManyToManyField(User, related_name='users')
   created_at = models.DateTimeField(auto_now_add=True, editable=False)
   updated_at = models.DateTimeField(auto_now=True, editable=False)
   title = models.CharField(max_length=150, default='Group Tasks')
@@ -31,5 +32,3 @@ class Group(models.Model):
 
   def __str__(self):
     return self.title
-
-
