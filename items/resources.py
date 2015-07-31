@@ -28,8 +28,7 @@ class ItemAuthorization(Authorization):
     return self.get_user(bundle) in bundle.obj.group.users.all()
 
   def create_detail(self, object_list, bundle):
-    bundle.obj.users = bundle.data['users']
-    return True
+    return self.get_user(bundle) in bundle.obj.group.users.all()
 
   def delete_detail(self, object_list, bundle):
     return self.get_user(bundle) in bundle.obj.group.users.all()
@@ -51,7 +50,6 @@ class GroupAuthorization(Authorization):
     return []
 
   def read_detail(self, object_list, bundle):
-    print bundle.obj.item_set.all()
     return self.get_user(bundle) in bundle.obj.users.all()
 
   def update_detail(self, object_list, bundle):
