@@ -19,7 +19,7 @@ class ItemAuthorization(Authorization):
     return bundle.request.user
 
   def read_list(self, object_list, bundle):
-    return []
+    return object_list.none()
 
   def read_detail(self, object_list, bundle):
     return self.get_user(bundle) in bundle.obj.group.users.all()

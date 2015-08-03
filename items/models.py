@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from tastypie.utils.timezone import now
 
 class Group(models.Model):
-  users = models.ManyToManyField(User, related_name='users')
+  users = models.ManyToManyField(User)
   created_at = models.DateTimeField(auto_now_add=True, editable=False)
   updated_at = models.DateTimeField(auto_now=True, editable=False)
   title = models.CharField(max_length=150, default='Group Tasks')
