@@ -1,14 +1,15 @@
 from django.conf.urls import patterns, include, url
 from django.contrib import admin
 from tastypie.api import Api
-
 from items.resources import ItemResource, UserResource, LoginResource, RegistrationResource
+from items.resources import GroupResource
 
 api = Api(api_name='v1')
 api.register(ItemResource())
 api.register(UserResource())
 api.register(LoginResource())
 api.register(RegistrationResource())
+api.register(GroupResource())
 
 urlpatterns = patterns('',
     url(r'^api/', include(api.urls)),
