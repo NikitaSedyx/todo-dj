@@ -98,7 +98,7 @@ class UserResource(ModelResource):
 
 
 class GroupResource(ModelResource):
-  creator = fields.ForeignKey(UserResource, 'creator')
+  creator = fields.ForeignKey(UserResource, 'creator', blank=True, full=True)
   users = fields.ManyToManyField(UserResource, 'users', blank=True, full=True)
   items = fields.ToManyField('items.resources.ItemResource', 'item_set', related_name="group", full=True)
   class Meta:
