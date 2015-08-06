@@ -56,7 +56,7 @@ class GroupAuthorization(Authorization):
     return self.get_user(bundle) in bundle.obj.users.all()
 
   def create_detail(self, object_list, bundle):
-    bundle.obj.users.append(self.get_user(bundle))
+    bundle.obj.creator = self.get_user(bundle)
     return True
 
   def delete_detail(self, object_list, bundle):
