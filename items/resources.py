@@ -95,6 +95,9 @@ class UserResource(ModelResource):
     excludes = ['email', 'password', 'is_active', 'is_staff', 'is_superuser']
     authentication = SessionAuthentication()
     authorization = UserAuthorization()
+    filtering = {
+      'username': ('icontains', ),
+    }
 
 
 class GroupResource(ModelResource):
@@ -121,8 +124,8 @@ class ItemResource(ModelResource):
     limit = 10
     ordering = ['is_completed', 'description', 'deadline']
     filtering = {
-      'description':('icontains', ),
-      'deadline':('gt', ),
+      'description': ('icontains', ),
+      'deadline': ('gt', ),
     }
 
 
