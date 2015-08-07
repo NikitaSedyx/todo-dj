@@ -3,6 +3,7 @@ from tastypie import fields
 from tastypie.authorization import Authorization
 from tastypie.authentication import SessionAuthentication
 from tastypie.paginator import Paginator
+from tastypie.http import HttpNotFound, HttpForbidden
 from django.contrib.sessions.models import Session
 from django.conf.urls import url
 from django.contrib import auth
@@ -10,7 +11,9 @@ from django.http import HttpResponse, HttpResponseServerError
 from items.models import Item, Group
 from django.contrib.auth.models import User, UserManager
 import json
+import xlwt
 from django.core import serializers
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 
 class ItemAuthorization(Authorization):
@@ -194,6 +197,50 @@ class RegistrationResource(Resource):
       return HttpResponse(response)
     else:
       return HttpResponseServerError('Forbidden method')
+
+
+class ExportResource(Resource):
+  class Meta:
+    resource_name = 'export'
+
+  def prepend_urls(self):
+    return [
+      url(r'^%s/xls/(?P<id>\d+)/$' % self._meta.resource_name, 
+        self.wrap_view('export_xls'), name='api_export_xls')
+    ]
+
+  def export_xls(self, request, **kwargs):
+    try:
+      group = Group.objects.get(pk=kwargs['id'])
+    except ObjectDoesNotExist:
+      return self.create_response(request, {}, HttpNotFound)
+    if request.user not in group.users.all():
+      return self.create_response(request, {}, HttpForbidden)
+    response = HttpResponse(content_type="application/xls")
+    response['Content-Disposition'] = 'attachment; filename=file.xls'
+    workbook = xlwt.Workbook()
+    sheet = workbook.add_sheet('Page 1')
+    line = 0
+    sheet.write(line, 0, "name")
+    sheet.write(line, 1, group.title)
+    line += 1
+    sheet.write(line, 0, "created at")
+    sheet.write(line, 1, group.created_at.strftime('%d %b %Y'))
+    line += 1
+    sheet.write(line, 0, "updated at")
+    sheet.write(line, 1, group.updated_at.strftime('%d %b %Y')) 
+    line += 1
+    sheet.write(line, 0, "items:")
+    line += 1
+    sheet.write(line, 0, "description")
+    sheet.write(line, 1, "Is completed")
+    line += 1
+    for item in group.item_set.all():
+      sheet.write(line, 0, item.description)
+      sheet.write(line, 1, str(item.is_completed))
+      line += 1
+    workbook.save(response)
+    return response
 
 
 class Unpacking:
