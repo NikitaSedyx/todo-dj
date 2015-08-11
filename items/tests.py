@@ -146,7 +146,7 @@ class GroupResourceTest(ResourceTestCase):
     self.assertEqual(len(result), 1)
   
   def test_create_group_authorized(self):
-    user = User.objects.get(username="user1")
+    user = User.objects.get(username='user1')
     group = {
       'title': 'group create test',
       'items': []
@@ -160,8 +160,8 @@ class GroupResourceTest(ResourceTestCase):
     self.assertEqual(groups_count, 3)
 
   def test_put_group_authorized(self):
-    user = User.objects.get(username="user1")
-    group = Group.objects.get(title="test1")
+    user = User.objects.get(username='user1')
+    group = Group.objects.get(title='test1')
     url = self.url + str(group.pk) + '/'
     group = self.api_client.get(url, format='json', 
       authentication=self.setSession('user1', 123))
@@ -172,11 +172,11 @@ class GroupResourceTest(ResourceTestCase):
     self.assertHttpAccepted(response)
   
   def test_delete_group_authorized(self):
-    user = User.objects.get(username="user1")
-    group = Group.objects.get(title="test1")
+    user = User.objects.get(username='user1')
+    group = Group.objects.get(title='test1')
     groups_count = Group.objects.filter(creator=user).count()
     self.assertEqual(groups_count, 2)
-    url = self.url + str(group.pk) + "/" 
+    url = self.url + str(group.pk) + '/' 
     response = self.api_client.delete(url, format='json',
       authentication=self.setSession('user1', 123)) 
     self.assertHttpAccepted(response)   
