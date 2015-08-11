@@ -1,0 +1,5 @@
+Django==1.8.2
+django-tastypie==0.12.2
+psycopg2==2.6.1
+xlwt==1.0.0
+xlwt-future==0.8.0
