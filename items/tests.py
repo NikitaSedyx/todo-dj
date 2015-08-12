@@ -218,3 +218,124 @@ class GroupResourceTest(ResourceTestCase):
     self.assertHttpAccepted(response)   
     groups_count = Group.objects.filter(creator=user).count()
     self.assertEqual(groups_count, 1)
+
+
+class UserResourceTest(ResourceTestCase):
+
+  def setUp(self):
+    super(UserResourceTest, self).setUp()
+    self.url = '/api/v1/user/'
+    User.objects.create_superuser('admin', 'a@a', 123)
+    User.objects.create_user('user', 'u@u', 123)
+
+  def setSession(self, username, password):
+    return self.api_client.post('/api/v1/auth/login/', format='json', data={'username':username, 'password':password})
+
+  def test_get_users_unauthorized(self):
+    response = self.api_client.get(self.url, format='json')
+    self.assertHttpUnauthorized(response)
+
+  def test_get_user_unauthorized(self):
+    user = User.objects.get(username='admin')
+    url = self.url + str(user.pk) + '/'
+    response = self.api_client.get(url, format='json')
+    self.assertHttpUnauthorized(response)
+
+  def test_create_user_unauthorized(self):
+    response = self.api_client.post(self.url, format='json', data={})
+    self.assertHttpUnauthorized(response)
+
+  def test_put_user_unauthorized(self):
+    user = User.objects.get(username='admin')
+    url = self.url + str(user.pk) + '/'
+    response = self.api_client.put(url, format='json', data={})
+    self.assertHttpUnauthorized(response)
+
+  def test_delete_user_unauthorized(self):
+    user = User.objects.get(username='admin')
+    url = self.url + str(user.pk) + '/'
+    response = self.api_client.delete(url, format='json', data={})
+    self.assertHttpUnauthorized(response)
+
+  def test_create_user_not_super(self):
+    response = self.api_client.post(self.url, format='json',
+      authentication=self.setSession('user', 123), data={})
+    self.assertHttpUnauthorized(response)
+
+  def test_create_user_super(self):
+    user_count = User.objects.all().count()
+    self.assertEqual(user_count, 2)
+    new_user = {
+      'username': 'new',
+      'email': 'n@n',
+      'password': 123
+    }
+    response = self.api_client.post(self.url, format='json',
+      authentication=self.setSession('admin', 123), data=new_user)
+    self.assertHttpCreated(response)
+    user_count = User.objects.all().count()
+    self.assertEqual(user_count, 3)
+
+  def test_put_user_not_owner(self):
+    user = User.objects.get(username='admin')
+    url = self.url + str(user.pk) + '/'
+    response = self.api_client.put(url, format='json', data={},
+      authentication=self.setSession('user', 123))
+    self.assertHttpUnauthorized(response)
+
+  def test_put_user_owner(self):
+    authentication=self.setSession('user', 123)
+    user = User.objects.get(username='user')
+    url = self.url + str(user.pk) + '/'
+    user = self.api_client.get(url, format='json',
+      authentication=authentication)
+    user = self.deserialize(user)
+    user['first_name'] = 'test'
+    response = self.api_client.put(url, format='json',
+      authentication=authentication, data=user)
+    self.assertHttpAccepted(response)
+    user = User.objects.get(username='user')
+    self.assertEqual(user.first_name, 'test')
+
+  def test_put_user_super(self):
+    authentication=self.setSession('admin', 123)
+    user = User.objects.get(username='user')
+    url = self.url + str(user.pk) + '/'
+    user = self.api_client.get(url, format='json',
+      authentication=authentication)
+    user = self.deserialize(user)
+    user['first_name'] = 'test super'
+    response = self.api_client.put(url, format='json',
+      authentication=authentication, data=user)
+    self.assertHttpAccepted(response)
+    user = User.objects.get(username='user')
+    self.assertEqual(user.first_name, 'test super')
+
+  def test_delete_user_not_owner(self):
+    user = User.objects.get(username='admin')
+    url = self.url + str(user.pk) + '/'
+    response = self.api_client.delete(url, format='json',
+      authentication=self.setSession('user', 123))
+    self.assertHttpUnauthorized(response)
+
+  def test_delete_user_owner(self):
+    user_count = User.objects.all().count()
+    self.assertEqual(user_count, 2)
+    user = User.objects.get(username='user')
+    url = self.url + str(user.pk) + '/'
+    response = self.api_client.delete(url, format='json',
+      authentication=self.setSession('user', 123))
+    self.assertHttpAccepted(response)
+    user_count = User.objects.all().count()
+    self.assertEqual(user_count, 1)
+
+  def test_delete_user_super(self):
+    user_count = User.objects.all().count()
+    self.assertEqual(user_count, 2)
+    user = User.objects.get(username='user')
+    url = self.url + str(user.pk) + '/'
+    response = self.api_client.delete(url, format='json',
+      authentication=self.setSession('admin', 123))
+    self.assertHttpAccepted(response)
+    user_count = User.objects.all().count()
+    self.assertEqual(user_count, 1)
