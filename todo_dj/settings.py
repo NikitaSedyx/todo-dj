@@ -37,6 +37,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'tastypie',
+    'django_nose',
     'items',
 )
 
@@ -92,3 +93,12 @@ STATIC_URL = '/static/'
 
 MEDIA_ROOT = os.sep.join([os.path.dirname(os.path.dirname(__file__)), 'media'])
 MEDIA_URL = '/media/'
+
+# Use nose to run all tests
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+
+# Tell nose to measure coverage on the apps
+NOSE_ARGS = [
+    '--with-coverage',
+    '--cover-package=items',
+]
