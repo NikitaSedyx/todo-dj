@@ -80,6 +80,7 @@ class UserAuthorization(Authorization):
     return self.get_user(bundle).is_active
 
   def create_detail(self, object_list, bundle):
+    user = self.get_user(bundle)
     return user.is_superuser
 
   def update_detail(self, object_list, bundle):
