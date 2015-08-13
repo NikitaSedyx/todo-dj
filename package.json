@@ -7,6 +7,10 @@
     "type": "git",
     "url": "https://github.com/NikitaSedyx/todo/"
   },
+  "engines": {
+    "node": "0.10.x",
+    "npm": "2.1.x"
+  },
   "scripts": {
     "postinstall": "bower cache clean && bower install && gulp",
     "start": "node server.js"
