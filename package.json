@@ -1,0 +1,42 @@
+{
+  "name": "todo",
+  "version": "0.0.0",
+  "description": "todo list",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NikitaSedyx/todo/"
+  },
+  "scripts": {
+    "postinstall": "bower cache clean && bower install && gulp",
+    "start": "node server.js"
+  },
+  "author": "Nikita Sedyx mikita_siadykh@epam.com",
+  "license": "BSD-2-Clause",
+  "dependencies": {
+    "body-parser": "~1.13.1",
+    "express": "~4.12.4",
+    "jade": "~1.11.0",
+    "karma": "~0.12.36",
+    "karma-firefox-launcher": "~0.1.6",
+    "karma-jasmine": "~0.3.5",
+    "jasmine": "~2.3.1",
+    "underscore": "~1.8.3",
+    "http-proxy": "~1.11.1"
+  },
+  "private": true,
+  "devDependencies": {
+    "bower": "~1.4.1",
+    "gulp": "~3.9.0",
+    "gulp-concat": "~2.5.2",
+    "gulp-csso": "~1.0.0",
+    "gulp-jade": "~1.0.1",
+    "gulp-rename": "~1.2.2",
+    "gulp-uglify": "~1.2.0",
+    "gulp-jshint": "~1.11.0",
+    "gulp-karma": "0.0.4",
+    "gulp-sass": "~2.0.4",
+    "gulp-ignore": "~1.2.1",
+    "gulp-clean": "~0.3.1"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "name": "todo",
+  "version": "0.0.0",
+  "authors": [
+    "Nikita Sedyh <nikita.sedyx.94@gmail.com>"
+  ],
+  "ignore": [
+    ".jshintrc",
+    "**/*.txt"
+  ],
+  "dependencies": {
+    "jquery": "2.1.4",
+    "angular": "1.4.3",
+    "angular-resource": "1.4.3",
+    "underscore": "1.8.3",
+    "angular-mocks": "1.4.3",
+    "angular-ui-router": "~0.2.15",
+    "bootstrap": "3.3.5",
+    "angular-ui-validate": "1.1.1",
+    "angular-bootstrap": "0.13.1",
+    "angular-ui-grid": "3.0.1",
+    "highcharts-release": "4.1.7",
+    "d3": "3.5.6",
+    "masonry": "~3.3.1",
+    "angular-elastic": "~2.5.0",
+    "ngInfiniteScroll": "~1.2.1"
+  },
+  "resolutions": {
+    "angular": "1.4.3"
+  }
+}
