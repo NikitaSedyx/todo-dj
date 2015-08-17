@@ -27,11 +27,15 @@ app.all("/*", function(req, res){
     req.emit('end');
   });
 
+  console.log(req)
+
   apiProxy.web(req, res, { target: 'http://0.0.0.0:8080'});
 });
 
 var port = process.env.PORT || 5000
-app.listen(process.env.PORT, '0.0.0.0');
+app.listen(port, '0.0.0.0', function(){
+  console.log("Started in " + port)
+});
 
 
 
