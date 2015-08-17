@@ -1,2 +1,2 @@
-django: gunicorn todo_dj/wsgi.py:application --bind localhost:$DJANGO_PORT
+django: python manage.py runserver 0.0.0.0:8080 --noreload
 node: node server.js 
