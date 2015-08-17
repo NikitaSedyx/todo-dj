@@ -1,0 +1,16 @@
+
+<div class="title">{{group.title}}</div>
+<div ng-switch="group.view" class="tasks">
+  <div ng-switch-when="false" class="text">
+     
+    {{group.items[0].description}}
+  </div>
+  <ul ng-switch-when="true">
+    <li ng-repeat="task in group.items" ng-class="{completed: task.is_completed}">{{task.description}}</li>
+  </ul>
+  <div class="updated-date pull-right">
+     
+    {{group.updated_at | date: "mediumDate"}}
+  </div>
+  <div class="clearfix"></div>
+</div>

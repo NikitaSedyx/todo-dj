@@ -1,0 +1,21 @@
+
+<div class="modal-header">
+  <h3>Contributors</h3>
+</div>
+<div class="modal-body">
+  <ul class="contributors-list">
+    <li ng-repeat="contributor in contributors">{{contributor.username}}<i ng-click="deleteContributor($index)" class="glyphicon glyphicon-trash pull-right"></i>
+      <div class="clearfix"></div>
+    </li>
+  </ul>
+  <form ng-submit="findUsers()" class="search-contributors">
+    <input ng-model="username" class="search-field"/>
+    <ul class="search-results">
+      <li ng-repeat="user in users" ng-click="addContributor(user)">{{user.username}}</li>
+    </ul>
+  </form>
+</div>
+<div class="modal-footer">
+  <button ng-click="cancel()" class="btn btn-default">Cancel</button>
+  <button ng-click="apply()" class="btn btn-default">Save</button>
+</div>

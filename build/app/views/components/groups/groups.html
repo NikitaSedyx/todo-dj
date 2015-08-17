@@ -1,0 +1,14 @@
+
+<div class="row">
+  <!--new group will be here-->
+</div>
+<div class="row">
+  <div class="btn-group switch pull-right">
+    <label ng-model="groupView" btn-radio="'list'" ng-change="changeGroupView()" class="btn btn-primary"><i class="glyphicon glyphicon-th-list"></i></label>
+    <label ng-model="groupView" btn-radio="'panel'" ng-change="changeGroupView()" class="btn btn-primary"><i class="glyphicon glyphicon-th"></i></label>
+  </div>
+</div>
+<div class="row">
+  <div ui-view="list" ng-if="groupView == 'list'"></div>
+  <div ui-view="panel" ng-if="groupView == 'panel'"></div>
+</div>

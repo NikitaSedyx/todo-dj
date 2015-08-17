@@ -1,0 +1,20 @@
+
+<div masonry="masonry" infinite-scroll="loadData()" infinite-scroll-immediate-check="false" class="col-md-12">
+  <div ng-repeat="group in groups.data" ui-sref="edit-group({id: group.id})" class="col-md-3 group">
+    <div class="title">{{group.title}}</div>
+    <div ng-switch="group.view" class="tasks">
+      <div ng-switch-when="false" class="text">
+         
+        {{group.items[0].description}}
+      </div>
+      <ul ng-switch-when="true">
+        <li ng-repeat="task in group.items" ng-class="{completed: task.is_completed}">{{task.description}}</li>
+      </ul>
+      <div class="updated-date pull-right">
+         
+        {{group.updated_at | date: "mediumDate"}}
+      </div>
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</div>

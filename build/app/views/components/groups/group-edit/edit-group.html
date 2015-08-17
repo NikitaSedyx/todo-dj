@@ -1,0 +1,39 @@
+
+<div class="row">
+  <div class="group edit-group col-md-6 col-md-offset-3">
+    <div class="row">
+      <input type="text" ng-model="group.title" placeholder="Title" ng-blur="updateGroup()" class="title"/>
+      <div ng-switch="group.view" class="tasks">
+        <textarea msd-elastic="msd-elastic" ng-switch-when="false" ng-model="group.items[0].description" ng-blur="updateGroup()" class="text-task"></textarea>
+        <ul ng-switch-when="true">
+          <li ng-repeat="task in group.items">
+            <input type="checkbox" ng-model="task.is_completed" ng-change="updateGroup()" class="checkbox status"/>
+            <div class="description-container">
+              <input type="text" ng-model="task.description" ng-class="{completed: task.is_completed}" ng-blur="updateGroup()" class="description"/><i ng-click="deleteTask(task)" class="glyphicon glyphicon-trash trash"></i>
+            </div>
+          </li>
+          <li>
+            <form ng-submit="addTask()">
+              <input type="text" ng-model="newTask.description" placeholder="New Task" tooltip="Press 'Enter' to add new task" tooltip-trigger="focus" tooltip-placement="bottom" class="new-task-description"/>
+            </form>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="row">
+      <div class="control-panel">
+        <div class="group-control btn-group pull-left">
+          <button tooltip="Add contributor" tooltip-placement="bottom" ng-click="editContributors()" class="btn btn-default"><i class="glyphicon glyphicon-user"></i></button>
+          <button tooltip="Add file" tooltip-placement="bottom" class="btn btn-default"><i class="glyphicon glyphicon-floppy-disk"></i></button>
+          <button tooltip="Export to xls" tooltip-placement="bottom" ng-click="xlsExport()" class="btn btn-default"><i class="glyphicon glyphicon-export"></i></button>
+          <button tooltip="Delete group" tooltip-placement="bottom" ng-click="deleteGroup()" class="btn btn-default"><i class="glyphicon glyphicon-trash trash"></i></button>
+        </div>
+        <div class="edit-control btn-group pull-right">
+          <button tooltip="Cancel" tooltip-placement="bottom" ui-sref="groups.list" class="btn btn-default"><i class="glyphicon glyphicon-remove"></i></button>
+          <button tooltip="Apply" tooltip-placement="bottom" ng-click="apply()" class="btn btn-default"><i class="glyphicon glyphicon-ok"></i></button>
+        </div>
+        <div class="clearfix"></div>
+      </div>
+    </div>
+  </div>
+</div>

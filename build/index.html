@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html ng-app="todo">
+  <head>
+    <title>Todo</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="assets/libs/bootstrap/dist/css/bootstrap.css" rel="stylesheet">
+    <link href="assets/css/index.css" rel="stylesheet">
+    <link href="assets/libs/angular-ui-grid/ui-grid.min.css" rel="stylesheet">
+  </head>
+  <body>
+    <div class="container-fluid">
+      <div class="row top-menu">
+        <div class="col-md-10 col-md-offset-1">
+          <div ui-sref="tasks" class="title pull-left">Todo</div>
+          <div ng-controller="LogoutController" class="pull-right">
+            <div ng-if="user" class="dropdown">
+              <button data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" class="btn dropdown-toggle">{{user.username}}<span class="caret"></span></button>
+              <ul aria-labelledby="user-dropdown" class="dropdown-menu pull-right">
+                <li><a ng-click="logout()">Logout</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row content">
+        <div class="col-md-10 col-md-offset-1">
+          <div ui-view></div>
+        </div>
+      </div>
+    </div>
+    <script src="assets/libs/jquery/dist/jquery.min.js"></script>
+    <script src="assets/libs/masonry/dist/masonry.pkgd.js"></script>
+    <script src="assets/libs/bootstrap/dist/js/bootstrap.js"></script>
+    <script src="assets/libs/angular/angular.min.js"></script>
+    <script src="assets/libs/angular-resource/angular-resource.min.js"></script>
+    <script src="assets/libs/angular-bootstrap/ui-bootstrap.min.js"></script>
+    <script src="assets/libs/angular-bootstrap/ui-bootstrap-tpls.js"></script>
+    <script src="assets/libs/angular-ui-validate/dist/validate.js"></script>
+    <script src="assets/libs/angular-ui-router/release/angular-ui-router.min.js"></script>
+    <script src="assets/libs/angular-ui-grid/ui-grid.min.js"></script>
+    <script src="assets/libs/angular-elastic/elastic.js"></script>
+    <script src="assets/libs/ngInfiniteScroll/build/ng-infinite-scroll.min.js"></script>
+    <script src="assets/libs/underscore/underscore-min.js"></script>
+    <script src="assets/libs/highcharts-release/highcharts.js"></script>
+    <script src="assets/libs/d3/d3.min.js"></script>
+    <script src="app/index.js"></script>
+  </body>
+</html>
