@@ -30,7 +30,8 @@ app.all("/*", function(req, res){
   apiProxy.web(req, res, { target: 'http://0.0.0.0:8080'});
 });
 
-app.listen(8000);
+var port = process.env.PORT || 5000
+app.listen(process.env.PORT, '0.0.0.0');
 
 
 
