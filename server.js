@@ -27,8 +27,10 @@ app.all("/*", function(req, res){
     req.emit('end');
   });
 
-  apiProxy.web(req, res, { target: 'http://localhost:8080'});
+  apiProxy.web(req, res, { target: 'http://0.0.0.0:8080'});
 });
+
+console.log(process.env.PORT)
 
 app.listen(8000);
 
