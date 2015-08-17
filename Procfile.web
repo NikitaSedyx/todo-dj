@@ -1,2 +1,2 @@
-django: python manage.py runserver 0.0.0.0:8080 --noreload
+django: python manage.py runserver 0.0.0.0:$DJANGO_PORT
 node: node server.js

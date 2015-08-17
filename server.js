@@ -27,11 +27,12 @@ app.all("/*", function(req, res){
     req.emit('end');
   });
 
-  apiProxy.web(req, res, { target: 'http://0.0.0.0:8080'});
+  apiProxy.web(req, res, { target: 'http://0.0.0.0:' + process.env.DJANGO_PORT});
 });
 
 var port = process.env.PORT || 5000
 app.listen(port, '0.0.0.0', function(){
+  console.log("DJANGO_PORT: " + process.env.DJANGO_PORT)
   console.log("Started in " + port)
 });
 
