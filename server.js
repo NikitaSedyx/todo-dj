@@ -27,8 +27,6 @@ app.all("/*", function(req, res){
     req.emit('end');
   });
 
-  console.log(req)
-
   apiProxy.web(req, res, { target: 'http://0.0.0.0:8080'});
 });
 
