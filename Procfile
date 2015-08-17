@@ -1,2 +1,1 @@
-python: python manage.py runserver localhost:$PORT
-node: node server.js
+web: python manage.py runserver localhost:8080 & node server.js
