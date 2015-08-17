@@ -30,8 +30,6 @@ app.all("/*", function(req, res){
   apiProxy.web(req, res, { target: 'http://0.0.0.0:8080'});
 });
 
-console.log(process.env.PORT)
-
 app.listen(8000);
 
 
