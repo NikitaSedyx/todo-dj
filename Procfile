@@ -1,1 +1,1 @@
-web: python manage.py runserver localhost:8080 & node server.js
+web: bin/runsvdir-dyno

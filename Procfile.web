@@ -1,1 +1,2 @@
-django: python manage.py runserver localhost:8080 node: node server.js 
+django: gunicorn todo_dj/wsgi.py:application --bind localhost:$DJANGO_PORT
+node: node server.js 
