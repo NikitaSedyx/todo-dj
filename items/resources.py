@@ -3,7 +3,7 @@ from tastypie import fields
 from tastypie.authorization import Authorization
 from tastypie.authentication import SessionAuthentication
 from tastypie.paginator import Paginator
-from tastypie.http import HttpNotFound, HttpForbidden
+from tastypie.http import HttpNotFound, HttpForbidden, HttpUnauthorized
 from django.contrib.sessions.models import Session
 from django.conf.urls import url
 from django.contrib import auth
@@ -145,28 +145,39 @@ class LoginResource(Resource):
     ]
 
   def login(self, request, **kwargs):
-    if request.method == 'POST':
-      data = json.loads(request.body)
-      username = data['username']
-      password = data['password']
+    self.method_check(request, allowed=['post'])
+    current_user = request.user
+    if current_user.is_anonymous():
+      data = self.deserialize(request, request.body,
+      format=request.META.get('CONTENT_TYPE', 'application/json'))
+      username = data.get('username')
+      password = data.get('password')
       user = auth.authenticate(username=username, password=password)
       if user is not None:
-        auth.login(request, user)
-        response = self.create_response(request, Unpacking.unpack_user(user))
-        return HttpResponse(response)
+        if user.is_active:
+          auth.login(request,user)
+          return self.create_response(request, {'user' : Unpacking.unpack_user(user)})
+        else:
+          return self.create_response(request, {}, HttpForbidden )
       else:
-        return HttpResponse(status=500)
+        return self.create_response(request, {}, HttpUnauthorized)
     else:
-      return HttpResponse(status=500)
+      return self.create_response(request, {'user' : Unpacking.unpack_user(current_user)})
 
   def logout(self, request, **kwargs):
-    auth.logout(request)
-    return HttpResponse(status=200)
+    self.method_check(request, allowed=['get'])
+    if request.user and request.user.is_authenticated():
+      auth.logout(request)
+      return self.create_response(request,{})
+    else:
+      return self.create_response(request,{}, HttpUnauthorized)
 
   def get_user(self, request, **kwargs):
     user = request.user
-    response = self.create_response(request, Unpacking.unpack_user(user))
-    return HttpResponse(response)
+    if user.is_anonymous():
+      return self.create_response(request, {}, HttpUnauthorized)
+    else:
+      return self.create_response(request,{'user' : Unpacking.unpack_user(user)})
 
 
 class RegistrationResource(Resource):
@@ -179,25 +190,25 @@ class RegistrationResource(Resource):
     ]
 
   def registration(self, request, **kwargs):
-    if request.method == 'POST':
-      try:
-        data = json.loads(request.body)
-        username = data['username']
-        password = data['password']
-        confirm_password = data['confirmPassword']
-        email = data['email']
-      except KeyError:
-        return HttpResponseServerError('Wrong params')
-      if password != confirm_password:
-        return HttpResponseServerError('Passwords are not equal')
-      try:
-        user = User.objects.create_user(username=username, password=password, email=email)
-      except IntegrityError:
-        return HttpResponseServerError('There is user with this name')
-      response = self.create_response(request, Unpacking.unpack_user(user))
-      return HttpResponse(response)
-    else:
-      return HttpResponseServerError('Forbidden method')
+    self.method_check(request, allowed=['post'])
+    data = self.deserialize(request, request.body,
+    format=request.META.get('CONTENT_TYPE', 'application/json'))
+    username = data.get('username')
+    password = data.get('password')
+    repeatPassword = data.get('confirmPassword')
+    try:
+      user=User.objects.get(username=username)
+      return self.create_response(request, { 'success' : False })
+    except ObjectDoesNotExist:
+      if password == repeatPassword:
+        email = data.get('email')
+        user = User.objects.create_user(username, email, password)
+        user.save()
+        user = auth.authenticate(username=username, password=password)
+        auth.login(request,user)
+        return self.create_response(request, {'success' : True, 'user' : Unpacking.unpack_user(user)})
+      else:
+        return self.create_response(request, {}, HttpUnauthorized)
 
 
 class ExportResource(Resource):
