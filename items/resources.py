@@ -148,36 +148,35 @@ class LoginResource(Resource):
     self.method_check(request, allowed=['post'])
     current_user = request.user
     if current_user.is_anonymous():
-      data = self.deserialize(request, request.body,
-      format=request.META.get('CONTENT_TYPE', 'application/json'))
+      data = self.deserialize(request, request.body, format=request.META.get('CONTENT_TYPE', 'application/json'))
       username = data.get('username')
       password = data.get('password')
       user = auth.authenticate(username=username, password=password)
       if user is not None:
         if user.is_active:
           auth.login(request,user)
-          return self.create_response(request, {'user' : Unpacking.unpack_user(user)})
+          return self.create_response(request, {'user': Unpacking.unpack_user(user)})
         else:
           return self.create_response(request, {}, HttpForbidden )
       else:
         return self.create_response(request, {}, HttpUnauthorized)
     else:
-      return self.create_response(request, {'user' : Unpacking.unpack_user(current_user)})
+      return self.create_response(request, {'user': Unpacking.unpack_user(current_user)})
 
   def logout(self, request, **kwargs):
     self.method_check(request, allowed=['get'])
     if request.user and request.user.is_authenticated():
       auth.logout(request)
-      return self.create_response(request,{})
+      return self.create_response(request, {})
     else:
-      return self.create_response(request,{}, HttpUnauthorized)
+      return self.create_response(request, {}, HttpUnauthorized)
 
   def get_user(self, request, **kwargs):
     user = request.user
     if user.is_anonymous():
       return self.create_response(request, {}, HttpUnauthorized)
     else:
-      return self.create_response(request,{'user' : Unpacking.unpack_user(user)})
+      return self.create_response(request, Unpacking.unpack_user(user))
 
 
 class RegistrationResource(Resource):
@@ -191,22 +190,20 @@ class RegistrationResource(Resource):
 
   def registration(self, request, **kwargs):
     self.method_check(request, allowed=['post'])
-    data = self.deserialize(request, request.body,
-    format=request.META.get('CONTENT_TYPE', 'application/json'))
+    data = self.deserialize(request, request.body, format=request.META.get('CONTENT_TYPE', 'application/json'))
     username = data.get('username')
     password = data.get('password')
     repeatPassword = data.get('confirmPassword')
     try:
       user=User.objects.get(username=username)
-      return self.create_response(request, { 'success' : False })
+      return self.create_response(request, {'success': False})
     except ObjectDoesNotExist:
       if password == repeatPassword:
         email = data.get('email')
         user = User.objects.create_user(username, email, password)
-        user.save()
         user = auth.authenticate(username=username, password=password)
-        auth.login(request,user)
-        return self.create_response(request, {'success' : True, 'user' : Unpacking.unpack_user(user)})
+        auth.login(request, user)
+        return self.create_response(request, {'success': True, 'user': Unpacking.unpack_user(user)})
       else:
         return self.create_response(request, {}, HttpUnauthorized)
 

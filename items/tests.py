@@ -230,7 +230,7 @@ class LoginResourceTest(ResourceTestCase):
 
   def setSession(self, username, password):
     return self.api_client.post('/api/v1/auth/login/',
-      format='json', data={"username":username, "password":password})
+      format='json', data={"username": username, "password": password})
 
   def test_delete_MethodNotAllowed(self):
     self.assertHttpMethodNotAllowed(
@@ -285,7 +285,7 @@ class RegisterResourceTest(ResourceTestCase):
     user2 = User.objects.create_user('user2', 'user2@mail.ru', 123)
 
   def setSession(self, username, password):
-    return self.api_client.post('/api/v1/auth/login/', format='json', data={"username":username, "password":password})
+    return self.api_client.post('/api/v1/auth/login/', format='json', data={"username": username, "password": password})
 
   def test_delete_MethodNotAllowed(self):
     self.assertHttpMethodNotAllowed(
@@ -301,8 +301,8 @@ class RegisterResourceTest(ResourceTestCase):
 
   def test_registration_fail_user_exist(self):
     response = self.api_client.post(self.reg_url, format='json',
-        data={'username' : 'user2', 'password' : '123',
-          'confirmPassword' : '123','email' : 'user2@mail.ru'})
+        data={'username': 'user2', 'password': '123',
+          'confirmPassword': '123','email': 'user2@mail.ru'})
     answer = self.deserialize(response)
     self.assertHttpOK(response)
     self.assertEqual(answer["success"], False)
@@ -311,14 +311,14 @@ class RegisterResourceTest(ResourceTestCase):
     self.assertHttpUnauthorized(
       self.api_client.post(
         self.reg_url, format='json',
-        data={'username' : 'user3', 'password' : '123',
-          'confirmPassword' : '1234','email' : 'user2@mail.ru'}))
+        data={'username': 'user3', 'password': '123',
+          'confirmPassword': '1234','email': 'user2@mail.ru'}))
 
   def test_registration_succes(self):
     response = self.api_client.post(
         self.reg_url, format='json',
-        data={'username' : 'user3', 'password' : '123',
-          'confirmPassword' : '123','email' : 'user2@mail.ru'})
+        data={'username': 'user3', 'password': '123',
+          'confirmPassword': '123','email': 'user2@mail.ru'})
     answer = self.deserialize(response)
     self.assertHttpOK(response)
     self.assertEqual(answer["success"], True)
