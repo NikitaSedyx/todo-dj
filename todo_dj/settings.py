@@ -102,3 +102,19 @@ NOSE_ARGS = [
     '--with-coverage',
     '--cover-package=items',
 ]
+#templates
+TEMPLATE_LOADERS = (
+    'django.template.loaders.filesystem.Loader',
+    'django.template.loaders.app_directories.Loader',
+)
+
+TEMPLATE_DIRS = (
+    './templates/',
+)
+
+#settings for SMTP
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 465
+EMAIL_HOST_USER = ''
+EMAIL_HOST_PASSWORD = ''
+EMAIL_USE_SSL = True

@@ -1,0 +1,28 @@
+<h2>{{ title }}</h2>
+<h3>Tasks</h3>
+<table>
+  <thead>
+    <tr>
+      <td>Description</td>
+      <td>Is Completed</td>
+    </tr>
+  </thead>
+  <tbody>
+    {% for item in items %}
+      <tr>
+        <td style="padding:0px 5px">
+          {{ item.description }}
+        </td>
+        <td style="text-align:center; padding:0px 5px">
+          {{ item.is_completed }}
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<p>
+  <i>Updated at: {{ updated_at }}</i>
+</p>
+<p>
+  <i>Created at: {{ created_at }}</i>
+</p>
