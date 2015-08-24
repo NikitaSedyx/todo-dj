@@ -21,26 +21,36 @@ class ItemAuthorization(Authorization):
   def get_user(self, bundle):
     return bundle.request.user
 
+  def check_access(self, bundle):
+    obj = bundle.obj.group
+    user = self.get_user(bundle)
+    return user in obj.users.all() or user == obj.creator 
+
   def read_list(self, object_list, bundle):
     return object_list.none()
 
   def read_detail(self, object_list, bundle):
-    return self.get_user(bundle) in bundle.obj.group.users.all()
+    return self.check_access(bundle)
 
   def update_detail(self, object_list, bundle):
-    return self.get_user(bundle) in bundle.obj.group.users.all()
+    return self.check_access(bundle)
 
   def create_detail(self, object_list, bundle):
-    return self.get_user(bundle) in bundle.obj.group.users.all()
+    return self.check_access(bundle)
 
   def delete_detail(self, object_list, bundle):
-    return self.get_user(bundle) in bundle.obj.group.users.all()
+    return self.check_access(bundle)
 
 
 class GroupAuthorization(Authorization):
 
   def get_user(self, bundle):
     return bundle.request.user
+
+  def check_access(self, bundle):
+    obj = bundle.obj
+    user = self.get_user(bundle)
+    return user in obj.users.all() or user == obj.creator  
 
   def read_list(self, object_list, bundle):
     if self.get_user(bundle).is_active:
@@ -53,17 +63,17 @@ class GroupAuthorization(Authorization):
     return []
 
   def read_detail(self, object_list, bundle):
-    return self.get_user(bundle) in bundle.obj.users.all()
+    return self.check_access(bundle) 
 
   def update_detail(self, object_list, bundle):
-    return self.get_user(bundle) in bundle.obj.users.all()
+    return self.check_access(bundle) 
 
   def create_detail(self, object_list, bundle):
     bundle.obj.creator = self.get_user(bundle)
     return True
 
   def delete_detail(self, object_list, bundle):
-    return bundle.request.user in bundle.obj.users.all()
+    return self.check_access(bundle) 
 
 
 class UserAuthorization(Authorization):
