@@ -21,7 +21,7 @@ class Group(models.Model):
 
 class Item(models.Model):
   created_at = models.DateTimeField(auto_now_add=True, editable=False)
-  description = models.CharField(max_length=150, default='')
+  description = models.TextField()
   is_completed = models.BooleanField(default=False)
   deadline = models.DateTimeField(default=now)
   group = models.ForeignKey(Group)
