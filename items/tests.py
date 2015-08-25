@@ -113,7 +113,7 @@ class GroupResourceTest(ResourceTestCase):
 
   def setUp(self):
     super(GroupResourceTest, self).setUp()
-    self.url = '/api/v1/group/'
+    self.URI = '/api/v1/group/'
     user_f = User.objects.create_user('user1', 'user1@mail.ru', 123)
     user_s = User.objects.create_user('user2', 'user2@mail.ru', 123)
     group = Group(creator=user_f, title='test1')
@@ -131,57 +131,67 @@ class GroupResourceTest(ResourceTestCase):
       format='json', data={'username':username, 'password':password})
 
   def test_get_groups_unauthorized(self):
-    response = self.api_client.get(self.url, format='json')
+    response = self.api_client.get(self.URI, format='json')
     self.assertHttpUnauthorized(response)
 
   def test_create_group_unauthorized(self):
-    response = self.api_client.post(self.url, format='json', data={})
+    response = self.api_client.post(self.URI, format='json', data={})
     self.assertHttpUnauthorized(response)
 
   def test_put_item_unauthorized(self):
-    url = self.url + '1/'
-    response = self.api_client.put(url, format='json', data={})
+    uri = self.URI + '1/'
+    response = self.api_client.put(uri, format='json', data={})
     self.assertHttpUnauthorized(response)
 
   def test_delete_group_unauthorized(self):
-    url = self.url + '1/'
-    response = self.api_client.delete(url, format='json')
+    uri = self.URI + '1/'
+    response = self.api_client.delete(uri, format='json')
     self.assertHttpUnauthorized(response)
 
   def test_get_group_not_contibutor(self):
     group = Group.objects.get(title='test1')
-    url = self.url + str(group.pk) + '/'
-    response = self.api_client.get(url, format='json',
+    uri = self.URI + str(group.pk) + '/'
+    response = self.api_client.get(uri, format='json',
       authentication=self.setSession('user2', 123))
     self.assertHttpUnauthorized(response)
 
   def test_put_group_not_contibutor(self):
     group = Group.objects.get(title='test1')
-    url = self.url + str(group.pk) + '/'
-    response = self.api_client.put(url, format='json',
+    uri = self.URI + str(group.pk) + '/'
+    response = self.api_client.put(uri, format='json',
       authentication=self.setSession('user2', 123), data={})
     self.assertHttpUnauthorized(response)
 
   def test_delete_group_not_contibutor(self):
     group = Group.objects.get(title='test1')
-    url = self.url + str(group.pk) + '/'
-    response = self.api_client.delete(url, format='json',
+    uri = self.URI + str(group.pk) + '/'
+    response = self.api_client.delete(uri, format='json',
       authentication=self.setSession('user2', 123))
     self.assertHttpUnauthorized(response)
 
   def test_get_groups_authorized(self):
-    response = self.api_client.get(self.url,
+    response = self.api_client.get(self.URI,
       format='json', authentication=self.setSession('user1', 123))
     self.assertValidJSONResponse(response)
     result = json.loads(response.content)['objects']
     self.assertEqual(len(result), 2)
-    response = self.api_client.get(self.url,
-      format='json', authentication=self.setSession('user2', 123))
-    self.assertValidJSONResponse(response)
-    result = json.loads(response.content)['objects']
-    self.assertEqual(len(result), 1)
 
   def test_create_group_authorized(self):
+    user = User.objects.get(username='user1')
+    group = {
+      'title': 'group create test',
+      'items': [],
+      'users': [{'id': user.pk}, ]
+    }
+    groups_count = Group.objects.filter(creator=user).count()
+    self.assertEqual(groups_count, 2)
+    response = self.api_client.post(self.URI, format='json',
+      data=group, authentication=self.setSession('user1', 123))
+    self.assertHttpCreated(response)
+    groups_count = Group.objects.filter(creator=user).count()
+    self.assertEqual(groups_count, 3)
+
+  def test_create_group_withot_users_field(self):
     user = User.objects.get(username='user1')
     group = {
       'title': 'group create test',
@@ -189,7 +199,7 @@ class GroupResourceTest(ResourceTestCase):
     }
     groups_count = Group.objects.filter(creator=user).count()
     self.assertEqual(groups_count, 2)
-    response = self.api_client.post(self.url, format='json',
+    response = self.api_client.post(self.URI, format='json',
       data=group, authentication=self.setSession('user1', 123))
     self.assertHttpCreated(response)
     groups_count = Group.objects.filter(creator=user).count()
@@ -198,22 +208,36 @@ class GroupResourceTest(ResourceTestCase):
   def test_put_group_authorized(self):
     user = User.objects.get(username='user1')
     group = Group.objects.get(title='test1')
-    url = self.url + str(group.pk) + '/'
-    group = self.api_client.get(url, format='json',
+    uri = self.URI + str(group.pk) + '/'
+    group = self.api_client.get(uri, format='json',
       authentication=self.setSession('user1', 123))
     group = self.deserialize(group)
     group['title'] = 'put test'
-    response = self.api_client.put(url, format='json',
+    response = self.api_client.put(uri, format='json',
       data=group, authentication=self.setSession('user1', 123))
     self.assertHttpAccepted(response)
+
+  def test_change_group_creator(self):
+    user = User.objects.get(username='user1')
+    user_s = User.objects.get(username='user2')
+    group = Group.objects.get(title='test1')
+    uri = self.URI + str(group.pk) + '/'
+    group = self.api_client.get(uri, format='json',
+      authentication=self.setSession('user1', 123))
+    group = self.deserialize(group)
+    group['creator'] = user_s
+    response = self.api_client.put(uri, format='json',
+      data=group, authentication=self.setSession('user1', 123))
+    self.assertHttpAccepted(response)
+    self.assertEqual(Group.objects.get(title='test1').creator, user)
 
   def test_delete_group_authorized(self):
     user = User.objects.get(username='user1')
     group = Group.objects.get(title='test1')
     groups_count = Group.objects.filter(creator=user).count()
     self.assertEqual(groups_count, 2)
-    url = self.url + str(group.pk) + '/'
-    response = self.api_client.delete(url, format='json',
+    uri = self.URI + str(group.pk) + '/'
+    response = self.api_client.delete(uri, format='json',
       authentication=self.setSession('user1', 123))
     self.assertHttpAccepted(response)
     groups_count = Group.objects.filter(creator=user).count()
