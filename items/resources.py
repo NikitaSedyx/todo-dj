@@ -8,7 +8,7 @@ from django.contrib.sessions.models import Session
 from django.conf.urls import url
 from django.contrib import auth
 from django.http import HttpResponse, HttpResponseServerError
-from items.models import Item, Group
+from items.models import Item, Group, File
 from django.contrib.auth.models import User, UserManager
 import json
 import xlwt
@@ -36,6 +36,28 @@ class ItemAuthorization(Authorization):
     return self.check_access(bundle)
 
   def update_detail(self, object_list, bundle):
+    return self.check_access(bundle)
+
+  def create_detail(self, object_list, bundle):
+    return self.check_access(bundle)
+
+  def delete_detail(self, object_list, bundle):
+    return self.check_access(bundle)
+
+class FileAuthorization(Authorization):
+
+  def get_user(self, bundle):
+    return bundle.request.user
+
+  def check_access(self, bundle):
+    obj = bundle.obj.group
+    user = self.get_user(bundle)
+    return user in obj.users.all() or user == obj.creator
+
+  def read_list(self, object_list, bundle):
+    return object_list.none()
+
+  def read_detail(self, object_list, bundle):
     return self.check_access(bundle)
 
   def create_detail(self, object_list, bundle):
@@ -121,6 +143,7 @@ class GroupResource(ModelResource):
   creator = fields.ForeignKey(UserResource, 'creator', blank=True, full=True, readonly=True)
   users = fields.ManyToManyField(UserResource, 'users', full=True, readonly=True)
   items = fields.ToManyField('items.resources.ItemResource', 'item_set', related_name="group", full=True)
+  files = fields.ToManyField('items.resources.FileResource', 'file_set', blank=True, related_name="group", full=True)
   class Meta:
     queryset = Group.objects.filter(is_deleted=False)
     resource_name = 'group'
@@ -128,6 +151,7 @@ class GroupResource(ModelResource):
     authorization = GroupAuthorization()
     paginator_class = Paginator
     limit = 10
+    always_return_data = True
 
   def hydrate_users(self, bundle):
     body = json.loads(bundle.request.body)
@@ -153,6 +177,31 @@ class ItemResource(ModelResource):
       'description': ('icontains', ),
       'deadline': ('gt', ),
     }
+
+
+class FileResource(ModelResource):
+  group = fields.ToOneField(GroupResource, 'group')
+  class Meta:
+    queryset = File.objects.all()
+    resource_name = 'file'
+    authentication = SessionAuthentication()
+    authorization = FileAuthorization()
+
+  def prepend_urls(self):
+    return [
+      url(r'^%s/upload/$' % self._meta.resource_name, self.wrap_view('upload'), name='api_file_upload'),
+    ]
+
+  def upload(self, request, **kwargs):
+    self.method_check(request, allowed=['post'])
+    self.is_authenticated(request)
+    groupid = request.POST['group']
+    group = Group.objects.get(id=groupid)
+    file_list = request.FILES.getlist('file')
+    for file in file_list:
+      instance = File(file=file, group=group, filename=file.name)
+      instance.save()
+    return self.create_response(request, {})
 
 
 class LoginResource(Resource):

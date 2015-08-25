@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 from tastypie.utils.timezone import now
+from django.db.models.signals import pre_delete
+from django.dispatch.dispatcher import receiver
 
 class Group(models.Model):
   creator = models.ForeignKey(User, related_name='creator')
@@ -32,3 +34,20 @@ class Item(models.Model):
 
   def __str__(self):
     return self.description
+
+
+class File(models.Model):
+  filename = models.CharField(max_length=150, default='')
+  file = models.FileField(upload_to='./', null=True)
+  group = models.ForeignKey(Group)
+
+  class Meta:
+    db_table = 'todo_files'
+
+  def __str__(self):
+    return self.filename
+
+
+@receiver(pre_delete, sender=File)
+def delete_file(sender, instance, **kwargs):
+    instance.file.delete(True)
