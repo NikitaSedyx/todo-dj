@@ -15,6 +15,9 @@ import xlwt
 from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
+from django.template.loader import get_template
+from django.template import Context
+from django.core.mail import EmailMessage
 
 class ItemAuthorization(Authorization):
 
@@ -233,9 +236,33 @@ class ExportResource(Resource):
 
   def prepend_urls(self):
     return [
+      url(r'^%s/email/(?P<id>\d+)/$' % self._meta.resource_name,
+        self.wrap_view('export_email'), name='api_export_email'),
       url(r'^%s/xls/(?P<id>\d+)/$' % self._meta.resource_name,
         self.wrap_view('export_xls'), name='api_export_xls')
     ]
+
+  def export_email(self, request, **kwargs):
+    try:
+      group = Group.objects.get(pk=kwargs['id'])
+    except ObjectDoesNotExist:
+      return self.create_response(request, {}, HttpNotFound)
+    if request.user not in group.users.all():
+      return self.create_response(request, {}, HttpForbidden)
+    send_from = ''
+    send_to = [request.user.email, ]
+    subject = 'Export Group email'
+    context = {
+      'title': group.title,
+      'created_at': group.created_at,
+      'updated_at': group.updated_at,
+      'items': group.item_set.all()
+    }
+    message = get_template('email.template.html').render(Context(context))
+    email = EmailMessage(subject, message, to=send_to, from_email=send_from)
+    email.content_subtype = 'html'
+    email.send()
+    return self.create_response(request, HttpResponse)
 
   def export_xls(self, request, **kwargs):
     try:
