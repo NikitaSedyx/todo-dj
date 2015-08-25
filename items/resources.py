@@ -144,7 +144,7 @@ class ItemResource(ModelResource):
     authentication = SessionAuthentication()
     authorization = ItemAuthorization()
     paginator_class = Paginator
-    limit = 10
+    limit = 0
     ordering = ['is_completed', 'description', 'deadline']
     filtering = {
       'description': ('icontains', ),
