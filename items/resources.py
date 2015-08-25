@@ -133,10 +133,6 @@ class TrashAuthorization(Authorization):
     return self.check_access(bundle)
 
 
-class TrashAuthorization(Authorization):
-  pass
-
-
 class UserAuthorization(Authorization):
 
   def get_user(self, bundle):
@@ -188,6 +184,9 @@ class GroupResource(ModelResource):
     paginator_class = Paginator
     limit = 10
     always_return_data = True
+    filtering = {
+      'title': ('icontains', ),
+    }
 
   def hydrate_users(self, bundle):
     body = json.loads(bundle.request.body)
