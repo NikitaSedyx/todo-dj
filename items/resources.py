@@ -105,8 +105,8 @@ class UserResource(ModelResource):
 
 
 class GroupResource(ModelResource):
-  creator = fields.ForeignKey(UserResource, 'creator', blank=True, full=True)
-  users = fields.ManyToManyField(UserResource, 'users', blank=True, full=True)
+  creator = fields.ForeignKey(UserResource, 'creator', blank=True, full=True, readonly=True)
+  users = fields.ManyToManyField(UserResource, 'users', full=True, readonly=True)
   items = fields.ToManyField('items.resources.ItemResource', 'item_set', related_name="group", full=True)
   class Meta:
     queryset = Group.objects.filter(is_deleted=False)
@@ -115,6 +115,15 @@ class GroupResource(ModelResource):
     authorization = GroupAuthorization()
     paginator_class = Paginator
     limit = 10
+
+  def hydrate_users(self, bundle):
+    body = json.loads(bundle.request.body)
+    bundle.obj.users.clear()
+    users = body.get('users', [])
+    for user in users:
+      user = User.objects.get(pk=user['id'])
+      bundle.obj.users.add(user)
+    return bundle
 
 
 class ItemResource(ModelResource):
