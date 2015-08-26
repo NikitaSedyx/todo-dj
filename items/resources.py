@@ -79,6 +79,10 @@ class GroupAuthorization(Authorization):
     return self.check_access(bundle) 
 
 
+class TrashAuthorization(Authorization):
+  pass
+
+
 class UserAuthorization(Authorization):
 
   def get_user(self, bundle):
@@ -137,6 +141,19 @@ class GroupResource(ModelResource):
       user = User.objects.get(pk=user['id'])
       bundle.obj.users.add(user)
     return bundle
+
+
+class TrashResource(ModelResource):
+  creator = fields.ForeignKey(UserResource, 'creator', readonly=True)
+  users = fields.ManyToManyField(UserResource, 'users', readonly=True)
+  items = fields.ToManyField('items.resources.ItemResource', 'item_set', related_name="group", full=True)
+  class Meta:
+    queryset = Group.objects.filter(is_deleted=True)
+    resource_name = 'trash'
+    authentication = SessionAuthentication()
+    authorization = TrashAuthorization()
+    paginator_class = Paginator
+    limit = 10
 
 
 class ItemResource(ModelResource):
