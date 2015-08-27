@@ -99,7 +99,38 @@ class GroupAuthorization(Authorization):
     return True
 
   def delete_detail(self, object_list, bundle):
+    return False
+
+
+class TrashAuthorization(Authorization):
+
+  def get_user(self, bundle):
+    return bundle.request.user
+
+  def check_access(self, bundle):
+    obj = bundle.obj
+    user = self.get_user(bundle)
+    return user in obj.users.all() or user == obj.creator  
+
+  def read_list(self, object_list, bundle):
+    allowed = []
+    user = self.get_user(bundle)
+    for obj in object_list:
+      if user in obj.users.all():
+        allowed.append(obj)
+    return allowed
+
+  def read_detail(self, object_list, bundle):
+    return False
+
+  def create_detail(self, object_list, bundle):
+    return False
+
+  def update_detail(self, object_list, bundle):
     return self.check_access(bundle) 
+
+  def delete_detail(self, object_list, bundle):
+    return self.check_access(bundle)
 
 
 class TrashAuthorization(Authorization):
