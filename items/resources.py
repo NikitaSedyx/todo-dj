@@ -4,6 +4,7 @@ from tastypie.authorization import Authorization
 from tastypie.authentication import SessionAuthentication
 from tastypie.paginator import Paginator
 from tastypie.http import HttpNotFound, HttpForbidden, HttpUnauthorized
+from tastypie.exceptions import ImmediateHttpResponse
 from django.contrib.sessions.models import Session
 from django.conf.urls import url
 from django.contrib import auth
@@ -162,6 +163,9 @@ class GroupResource(ModelResource):
       bundle.obj.users.add(user)
     return bundle
 
+  def unauthorized_result(self, exception):
+    raise ImmediateHttpResponse(response=HttpForbidden())
+
 
 class ItemResource(ModelResource):
   group = fields.ToOneField(GroupResource, 'group')
@@ -177,6 +181,9 @@ class ItemResource(ModelResource):
       'description': ('icontains', ),
       'deadline': ('gt', ),
     }
+
+  def unauthorized_result(self, exception):
+    raise ImmediateHttpResponse(response=HttpForbidden())
 
 
 class FileResource(ModelResource):
