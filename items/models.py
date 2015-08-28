@@ -12,6 +12,21 @@ class Group(models.Model):
   title = models.CharField(max_length=150, default='Group Tasks')
   view = models.BooleanField(default=True)
   is_deleted = models.BooleanField(default=False)
+  RED = 'red'
+  GREEN = 'green'
+  BLUE = 'blue'
+  ORANGE = 'orange'
+  WHITE = 'white'
+  YELLOW = 'yellow'
+  COLORS = (
+    (RED, RED),
+    (GREEN, GREEN),
+    (BLUE, BLUE),
+    (ORANGE, ORANGE),
+    (WHITE, WHITE),
+    (YELLOW, YELLOW),
+  )
+  color = models.CharField(max_length=6, choices=COLORS, default=WHITE)
 
   class Meta:
     db_table = 'todo_groups'
